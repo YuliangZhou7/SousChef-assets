@@ -18,12 +18,15 @@
 #   KOKORO_REVISION=<hash> scripts/build-kokoro-tarball.sh v1
 #
 # Prereqs:
-#   - huggingface-cli (`pip install huggingface_hub`)
+#   - hf  (`pipx install huggingface_hub`; the legacy `huggingface-cli`
+#     binary is deprecated)
+#   - /usr/bin/python3  (for JSON parsing)
 #   - GNU tar or bsdtar (macOS ships bsdtar as `tar`)
 
 source "$(dirname "${BASH_SOURCE[0]}")/lib/common.sh"
 
-require_cmd huggingface-cli
+require_cmd hf
+require_cmd /usr/bin/python3
 require_cmd tar
 
 VERSION="$(require_version "${1:-}")"
@@ -37,29 +40,39 @@ TARBALL="${STAGING}/kokoro-82m-en.tar.gz"
 COMMIT_FILE="${STAGING}/kokoro-82m-en.commit.txt"
 
 # English-only minimum subset (see upstream/kokoro.md).
-# Each entry is a glob passed to `huggingface-cli download --include`.
+# Each entry is a glob passed to `hf download --include`.
 INCLUDES=(
+  # TTS model (15 s max-utterance, compiled CoreML).
   "kokoro_21_15s_v2.mlmodelc/*"
+  # English G2P encoder/decoder.
   "G2PEncoder.mlmodelc/*"
   "G2PDecoder.mlmodelc/*"
+  # English phoneme / lexicon data.
   "g2p_vocab.json"
   "vocab_index.json"
   "us_gold.json"
   "us_lexicon_cache.json"
   "config.json"
+  # English voice embeddings — American (af_*, am_*) + British (bf_*, bm_*).
+  # MOS panel (task E3) picks one warmFemale + one warmMale from these.
+  "voices/af_*.json"
+  "voices/am_*.json"
+  "voices/bf_*.json"
+  "voices/bm_*.json"
 )
 
 info "Building Kokoro $VERSION tarball from ${HF_REPO}@${REVISION}"
 info "Subset: ${#INCLUDES[@]} include globs (English-only)"
 
-# Resolve the actual commit SHA (so 'main' is pinned for reproducibility).
+# Resolve the actual commit SHA so 'main' is pinned for reproducibility.
+# `hf models info --json --expand sha` returns: {"id": "...", "sha": "<40hex>"}
 RESOLVED_SHA="$(
-  huggingface-cli repo info "$HF_REPO" --revision "$REVISION" 2>/dev/null \
-    | awk '/^sha: /{print $2; exit}' \
+  hf models info "$HF_REPO" --revision "$REVISION" --json --expand sha 2>/dev/null \
+    | /usr/bin/python3 -c 'import json,sys; print(json.load(sys.stdin).get("sha",""))' \
   || true
 )"
 if [[ -z "$RESOLVED_SHA" ]]; then
-  info "Could not resolve commit SHA via 'huggingface-cli repo info'; falling back to revision string."
+  info "Could not resolve commit SHA via 'hf models info'; falling back to revision string."
   RESOLVED_SHA="$REVISION"
 fi
 info "Pinned source commit: $RESOLVED_SHA"
@@ -82,7 +95,7 @@ if [[ ! -d "$SUBSET_DIR" ]]; then
     include_flags+=("--include" "$pat")
   done
   info "Downloading subset → $SUBSET_DIR"
-  huggingface-cli download "$HF_REPO" \
+  hf download "$HF_REPO" \
     --revision "$RESOLVED_SHA" \
     --local-dir "$SUBSET_DIR" \
     "${include_flags[@]}"
@@ -90,9 +103,7 @@ if [[ ! -d "$SUBSET_DIR" ]]; then
   ok "Downloaded subset; commit recorded at $COMMIT_FILE"
 fi
 
-# Build the tarball. Use sorted entries for reproducibility.
 info "Building $TARBALL"
-# `tar -C staging -czf staging/kokoro-82m-en.tar.gz kokoro-82m-en/`
 tar -C "$STAGING" -czf "$TARBALL" "kokoro-82m-en"
 
 bytes="$(wc -c <"$TARBALL" | tr -d ' ')"

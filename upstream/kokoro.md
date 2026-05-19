@@ -15,12 +15,21 @@ For SousChef (English-only at M1 per DECISIONS.md), the minimum-viable subset is
 
 | File | Approx size | Why |
 |---|---|---|
-| `kokoro_21_15s_v2.mlmodelc` | ~150–200 MB | TTS model with 15 s max-utterance — sufficient for the longest recipe step likely in normal cookbooks. |
-| `G2PEncoder.mlmodelc` + `G2PDecoder.mlmodelc` | ~20–40 MB | English grapheme-to-phoneme conversion. |
+| `kokoro_21_15s_v2.mlmodelc/*` | ~150–200 MB | TTS model with 15 s max-utterance — sufficient for the longest recipe step likely in normal cookbooks. |
+| `G2PEncoder.mlmodelc/*` + `G2PDecoder.mlmodelc/*` | ~20–40 MB | English grapheme-to-phoneme conversion. |
 | `g2p_vocab.json` + `vocab_index.json` + `us_gold.json` + `us_lexicon_cache.json` | ~20 MB | English phoneme/lexicon data. |
 | `config.json` | trivial | FluidAudio runtime configuration. |
+| `voices/af_*.json` + `voices/am_*.json` (American) | ~1–3 MB total | Female / male American English voice embeddings. |
+| `voices/bf_*.json` + `voices/bm_*.json` (British) | ~1–3 MB total | British English voice embeddings — included as MOS-panel candidates (task E3). |
 
-Skip multilingual G2P (`MultilingualG2PEncoder.mlmodelc` etc.) and the smaller 5 s / 10 s TTS variants — saves ~50 % of the download.
+Skip:
+
+- Multilingual G2P (`MultilingualG2PEncoder.mlmodelc` etc.) — non-English only.
+- Smaller 5 s / 10 s TTS variants (`kokoro_21_5s*`, `kokoro_21_10s*`, `kokoro_24_*`) — we always pick the 15 s variant.
+- Source `.mlpackage` directories for every model (we only need the compiled `.mlmodelc`).
+- `ANE/`, `ANE-zh/` Apple-Neural-Engine-tuned variants and Chinese voices.
+
+Combined this saves ~70 % of the upstream ~6 GB repo.
 
 **Packaging approach — Option A locked (2026-05-19).**
 
