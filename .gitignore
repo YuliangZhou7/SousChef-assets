@@ -1,0 +1,15 @@
+# macOS
+.DS_Store
+
+# Staging — downloaded artifacts live here; never committed.
+# Use scripts/mirror.sh to populate; scripts/publish.sh to upload.
+staging/
+
+# Local environment
+.env
+.env.local
+
+# Editor cruft
+.vscode/
+.idea/
+*.swp

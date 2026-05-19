@@ -1,0 +1,42 @@
+{
+  "version": "v1",
+  "description": "First M1 voice-asset release. Includes wake-word + Kokoro TTS unconditionally; Whisper-large-v3-turbo conditionally based on the M1 STT spike outcome (Q3).",
+  "assets": [
+    {
+      "id": "hey-chef-wakeword",
+      "filename": "hey-chef.onnx",
+      "upstream_url": "TBD — fill in the direct .onnx download URL from openwakeword.com/library after you confirm which Hey Chef variant to ship",
+      "sha256": "TBD — populated by scripts/hash.sh after mirroring",
+      "size_bytes": 0,
+      "required_if": "always",
+      "unpacked_path": "hey-chef.onnx",
+      "notes": "If openwakeword.com publishes only .tflite, convert once via `python -m tf2onnx.convert --tflite hey-chef.tflite --output hey-chef.onnx --opset 18` and mirror the .onnx. Document the conversion in upstream/hey-chef.md."
+    },
+    {
+      "id": "kokoro-82m",
+      "filename": "kokoro-82m.mlmodelc.zip",
+      "upstream_url": "TBD — FluidAudio's CoreML release URL (e.g. https://github.com/FluidInference/FluidAudio/releases/download/v<x>/kokoro-82m.mlmodelc.zip)",
+      "sha256": "TBD",
+      "size_bytes": 0,
+      "required_if": "always",
+      "unpacked_path": "kokoro-82m.mlmodelc",
+      "notes": "Ship the directory zipped; the app unzips into Application Support/SousChef/voice-assets/v1/."
+    },
+    {
+      "id": "whisper-large-v3-turbo",
+      "filename": "whisper-large-v3-turbo.mlmodelc.zip",
+      "upstream_url": "TBD — argmaxinc/whisperkit-coreml release on Hugging Face",
+      "sha256": "TBD",
+      "size_bytes": 0,
+      "required_if": "stt_engine == 'whisper'",
+      "unpacked_path": "whisper-large-v3-turbo.mlmodelc",
+      "notes": "Conditional asset. Only mirrored + uploaded if the M1 STT spike (Q3 in M1_PLAN.md) picks WhisperKit. If iOS 26 SpeechAnalyzer wins, omit from the release entirely."
+    }
+  ],
+  "in_app_manifest_template": {
+    "version": "v1",
+    "stt_engine": "TBD — set after the M1 STT spike concludes (Q3)",
+    "base_url": "https://github.com/YuliangZhou7/SousChef-assets/releases/download/v1",
+    "assets_field_to_be_populated_by": "scripts/app-manifest.sh"
+  }
+}
