@@ -12,8 +12,9 @@ asset.
 |---|---|---|---|---|
 | `hey-chef.onnx` | openwakeword.com/library community section | community submission — restricted per openwakeword.com/terms (reviewed 2026-05-19) | **No.** Dev/dogfood only. | Local-only; not uploaded to a public GitHub release. Must be replaced by a custom-trained classifier before any TestFlight build. |
 | `kokoro-82m-en.tar.gz` *(filename pending packaging decision)* | `huggingface.co/FluidInference/kokoro-82m-coreml` — English subset | Apache 2.0 (Kokoro upstream) + Apache 2.0 (FluidInference CoreML packaging) | **Yes.** | Pending architecture decision (Option A tarball vs. B HF-direct vs. C defer); see `upstream/kokoro.md`. |
-| `whisper-large-v3-turbo.mlmodelc.zip` | [argmaxinc/whisperkit-coreml](https://huggingface.co/argmaxinc/whisperkit-coreml) | MIT (WhisperKit) + MIT (Whisper-large-v3-turbo upstream) | **Yes**, if shipped. | **Conditional asset** — included only if the M1 STT spike (M1_PLAN.md Q3) picks WhisperKit over iOS 26 `SpeechAnalyzer`. |
 | `speaker-verifier-placeholder.bin` | n/a — M1 stub | n/a | n/a | Placeholder; not shipped. Real FluidAudio speaker embedding lands in a post-M1 personalization milestone. |
+
+**Removed from v1 on 2026-05-19:** `whisper-large-v3-turbo.mlmodelc.zip` (argmaxinc/whisperkit-coreml, MIT). ~1.6 GB asset + ~1.5–2 GB peak RAM not justified vs. iOS 26 `SpeechAnalyzer` / `SFSpeechRecognizer` (both OS-shipped). Reintroduced only via the conditional post-MVP "Whisper open-form-STT quality experiment" milestone in SousChefApp-v2 — if that ever runs, it ships its own asset version (not v1). See `upstream/whisper-large-v3-turbo.md` for upstream details (kept as reference).
 
 ## v2 (planned — first public-release-eligible build)
 

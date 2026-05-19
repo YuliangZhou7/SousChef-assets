@@ -24,22 +24,18 @@
       "unpacked_path": "kokoro-82m-en/",
       "publish_eligible": true,
       "notes": "Pending architecture decision in M1_PLAN.md (Option A tarball / B HF-direct via FluidAudio's ModelRegistry.baseURL override / C skip from v1). Option A's filename + format shown here as the default; revise once decided."
-    },
+    }
+  ],
+  "removed_assets": [
     {
       "id": "whisper-large-v3-turbo",
-      "filename": "whisper-large-v3-turbo.mlmodelc.zip",
-      "upstream_url": "TBD — argmaxinc/whisperkit-coreml release on Hugging Face",
-      "sha256": "TBD",
-      "size_bytes": 0,
-      "required_if": "stt_engine == 'whisper'",
-      "unpacked_path": "whisper-large-v3-turbo.mlmodelc",
-      "publish_eligible": true,
-      "notes": "Conditional asset. Only mirrored + uploaded if the M1 STT spike (Q3 in M1_PLAN.md) picks WhisperKit. If iOS 26 SpeechAnalyzer wins, omit from the release entirely."
+      "removed_on": "2026-05-19",
+      "reason": "Whisper dropped from M1 scope. ~1.6 GB asset + ~1.5–2 GB peak resident RAM not justified vs. iOS 26 SpeechAnalyzer / SFSpeechRecognizer (both OS-shipped). Reintroduced only via the conditional post-MVP 'Whisper open-form-STT quality experiment' milestone in SousChefApp-v2 docs/milestone-plan.md — if that ever runs, it ships its own asset version (not v1)."
     }
   ],
   "in_app_manifest_template": {
     "version": "v1",
-    "stt_engine": "TBD — set after the M1 STT spike concludes (Q3)",
+    "open_form_stt_engine": "TBD — set after the M1 Q3 spike picks between iOS 26 SpeechAnalyzer and SFSpeechRecognizer (both OS-shipped; no asset to mirror)",
     "base_url": "https://github.com/YuliangZhou7/SousChef-assets/releases/download/v1",
     "assets_field_to_be_populated_by": "scripts/app-manifest.sh",
     "publish_eligibility_filter": "scripts/publish.sh and scripts/app-manifest.sh both filter out assets where publish_eligible=false"

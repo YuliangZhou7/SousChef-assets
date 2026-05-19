@@ -1,13 +1,15 @@
 # Whisper-large-v3-turbo (CoreML, via WhisperKit)
 
-**Status: CONDITIONAL.** Whether we ship this asset at all depends on the M1 STT spike outcome ([M1_PLAN.md Q3](https://github.com/YuliangZhou7/SousChef-v2/blob/main/docs/tasks/M1_PLAN.md)). If iOS 26 `SpeechAnalyzer` wins the spike (within ~5 WER points on the noisy condition), we **drop this asset** and the app fetches nothing for open-form STT.
+**Status: DROPPED from M1 scope (2026-05-19).** This document is kept as reference for the conditional post-MVP "Whisper open-form-STT quality experiment" milestone in [`SousChefApp-v2/docs/milestone-plan.md`](https://github.com/YuliangZhou7/SousChef-v2/blob/main/docs/milestone-plan.md). The experiment runs only if dogfooding shows the M1-chosen engine (iOS 26 `SpeechAnalyzer` or `SFSpeechRecognizer`, locked by Q3) misses cooking-Q&A WER targets in noisy real-kitchen conditions in a way users notice. If/when that experiment runs, it ships its own asset release (e.g. `v3`), not `v1`.
+
+**Why dropped:** ~1.6 GB asset + ~1.5–2 GB peak resident RAM + a CoreML compile step + an SPM dependency for a runner the cost analysis flagged as a likely loser to iOS 26 `SpeechAnalyzer` (also OS-shipped, zero download). Original "drop Whisper if SpeechAnalyzer is within ~5 WER points on noisy" spike rule is moot — Whisper isn't in the spike anymore.
 
 ## Source
 
 - **Upstream model:** [openai/whisper-large-v3-turbo](https://huggingface.co/openai/whisper-large-v3-turbo) — MIT.
 - **CoreML packaging:** [argmaxinc/whisperkit-coreml](https://huggingface.co/argmaxinc/whisperkit-coreml) — MIT-licensed CoreML conversions of every Whisper variant.
 - **Swift runtime:** [argmaxinc/WhisperKit](https://github.com/argmaxinc/WhisperKit) — Swift Package; depends on the CoreML asset at runtime.
-- **App integration:** task C5 (open-form STT adapter), only built if Q3 picks Whisper.
+- **App integration (historical):** original M1 plan had task C5 (open-form STT adapter) building this conditionally if Q3 picked Whisper. C5 now wraps the Q3-locked Apple-shipped engine. The "if Whisper wins" branch no longer exists.
 
 ## What we mirror
 
