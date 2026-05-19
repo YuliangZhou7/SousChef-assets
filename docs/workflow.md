@@ -9,7 +9,13 @@ End-to-end recipe for shipping a new version of the voice assets.
   `YuliangZhou7/SousChef-assets` (`gh auth status`).
 - `curl`, `python3` (system), one of `sha256sum` / `shasum`.
 - For `.tflite → .onnx` conversions (Hey Chef): `pip install tf2onnx tensorflow`.
-- For the Kokoro v1 tarball build: `pip install huggingface_hub` (provides `huggingface-cli`).
+- For the Kokoro v1 tarball build: `huggingface-cli` (from `huggingface_hub`). On a macOS Homebrew Python install, system-wide pip is blocked by PEP 668; install via pipx instead:
+  ```bash
+  brew install pipx
+  pipx ensurepath
+  pipx install huggingface_hub
+  ```
+  Verify with `huggingface-cli --version`.
 
 ## End-to-end: shipping v1 (initial release)
 
