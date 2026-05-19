@@ -91,14 +91,13 @@ scripts/app-manifest.sh v2 \
 
 Don't delete the `v1` release — installed app versions still depend on those URLs. New version → new tag.
 
-## Conditional asset: Whisper
+## Conditional asset: Whisper (dropped from v1, 2026-05-19)
 
-Whisper-large-v3-turbo is in the v1 manifest with `"required_if": "stt_engine == 'whisper'"`. Until the M1 STT spike (Q3) concludes:
+Whisper-large-v3-turbo was originally a conditional asset in the v1 manifest pending the M1 Q3 STT spike outcome. On 2026-05-19 it was removed from M1 scope entirely (see SousChefApp-v2 `docs/milestone-plan.md` post-MVP roadmap entry "Whisper open-form-STT quality experiment"); the manifest now lists it under `removed_assets`. No mirror / hash / publish steps run for Whisper in v1.
 
-- Leave its `upstream_url` as `"TBD"` in `manifests/v1.json` if iOS 26 SpeechAnalyzer wins.
-- Fill it in and complete steps ②–⑤ if Whisper wins.
+If the post-MVP experiment ever runs, it ships its own asset release (`v3` or later) with a fresh manifest — don't retroactively add Whisper back into `v1`.
 
-`scripts/mirror.sh` skips `"TBD"` entries silently. `scripts/app-manifest.sh` skips assets with `"TBD"` sha256 from the emitted in-app manifest, so the app never tries to download a Whisper asset that wasn't published.
+`scripts/mirror.sh` and `scripts/app-manifest.sh` still skip `"TBD"` entries silently — that mechanism remains useful for any future conditional asset.
 
 ## Publish-eligibility (license-restricted assets)
 
