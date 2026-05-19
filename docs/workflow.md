@@ -9,6 +9,7 @@ End-to-end recipe for shipping a new version of the voice assets.
   `YuliangZhou7/SousChef-assets` (`gh auth status`).
 - `curl`, `python3` (system), one of `sha256sum` / `shasum`.
 - For `.tflite → .onnx` conversions (Hey Chef): `pip install tf2onnx tensorflow`.
+- For the Kokoro v1 tarball build: `pip install huggingface_hub` (provides `huggingface-cli`).
 
 ## End-to-end: shipping v1 (initial release)
 
@@ -45,6 +46,13 @@ SousChef-assets/                       SousChefApp-v2/
 scripts/mirror.sh v1
 ```
 Idempotent. Files already downloaded with a matching SHA-256 are skipped. If a URL is still `"TBD"`, the script logs and continues — useful when you're iterating one asset at a time.
+
+Some assets are produced by a sibling build script rather than a single `curl` (e.g. the Kokoro v1 tarball, which is the English subset of a multi-file HuggingFace repo). Those entries use a `local:<script>` sentinel for `upstream_url`. `mirror.sh` recognises the prefix and tells you which script to run — it does not run them automatically. For v1:
+
+```bash
+scripts/build-kokoro-tarball.sh v1   # builds staging/v1/kokoro-82m-en.tar.gz
+scripts/mirror.sh v1                 # re-run; now sees the tarball staged
+```
 
 **③ Hash.** Computes SHA-256 + byte size for every staged file, writes back into the manifest:
 ```bash

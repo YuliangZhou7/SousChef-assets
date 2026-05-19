@@ -57,6 +57,29 @@ while IFS=$'\t' read -r id filename url expected_sha; do
     continue
   fi
 
+  # 'local:<descriptor>' — file is NOT curl-fetched by mirror.sh.
+  # Two flavours:
+  #   - 'local:scripts/<path>'  → operator must run that build script
+  #     (e.g. scripts/build-kokoro-tarball.sh for the Kokoro tarball).
+  #   - 'local:manual[:<note>]' → operator places the file manually
+  #     (e.g. the dev-only openwakeword.com community Hey Chef model).
+  # In either case mirror.sh just checks staging and logs guidance.
+  # Keeps mirror.sh's contract simple: one transport (HTTP) per
+  # fetched asset; everything else is opt-in / out-of-band.
+  if [[ "$url" == local:* ]]; then
+    descriptor="${url#local:}"
+    if [[ -f "$out" ]]; then
+      ok "[$id] already staged at $out (source: local:$descriptor; not fetched via curl)."
+    elif [[ "$descriptor" == scripts/* ]]; then
+      info "[$id] requires local build: $descriptor $VERSION"
+      info "      Run that script, then rerun scripts/mirror.sh $VERSION."
+    else
+      info "[$id] requires manual placement at $out (source: $descriptor)."
+      info "      Drop the file in place, then rerun scripts/mirror.sh $VERSION."
+    fi
+    continue
+  fi
+
   if [[ -f "$out" && "$expected_sha" != "TBD"* && -n "$expected_sha" ]]; then
     actual_sha="$(${SHA_CMD[@]} "$out" | awk '{print $1}')"
     if [[ "$actual_sha" == "$expected_sha" ]]; then

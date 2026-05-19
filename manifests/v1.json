@@ -6,7 +6,7 @@
     {
       "id": "hey-chef-wakeword",
       "filename": "hey-chef.onnx",
-      "upstream_url": "openwakeword.com/library community section — manual download; specific URL not recorded at download time",
+      "upstream_url": "local:manual:openwakeword.com/library community section (specific URL not recorded; manual download)",
       "sha256": "TBD — populated by scripts/hash.sh after mirroring",
       "size_bytes": 0,
       "required_if": "always",
@@ -17,13 +17,13 @@
     {
       "id": "kokoro-82m-en",
       "filename": "kokoro-82m-en.tar.gz",
-      "upstream_url": "https://huggingface.co/FluidInference/kokoro-82m-coreml (English subset; see upstream/kokoro.md for the file list)",
+      "upstream_url": "local:scripts/build-kokoro-tarball.sh",
       "sha256": "TBD",
       "size_bytes": 0,
       "required_if": "always",
       "unpacked_path": "kokoro-82m-en/",
       "publish_eligible": true,
-      "notes": "Pending architecture decision in M1_PLAN.md (Option A tarball / B HF-direct via FluidAudio's ModelRegistry.baseURL override / C skip from v1). Option A's filename + format shown here as the default; revise once decided."
+      "notes": "Option A locked (2026-05-19): tarball of the English subset of huggingface.co/FluidInference/kokoro-82m-coreml (Apache 2.0). Built locally via scripts/build-kokoro-tarball.sh v1 — requires huggingface-cli. The script downloads the subset listed in upstream/kokoro.md, records the source HF commit SHA in staging/v1/kokoro-82m-en.commit.txt, and tars to staging/v1/kokoro-82m-en.tar.gz. scripts/mirror.sh recognises the 'local:' upstream_url prefix and skips curl for this entry."
     }
   ],
   "removed_assets": [

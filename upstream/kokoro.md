@@ -22,13 +22,29 @@ For SousChef (English-only at M1 per DECISIONS.md), the minimum-viable subset is
 
 Skip multilingual G2P (`MultilingualG2PEncoder.mlmodelc` etc.) and the smaller 5 s / 10 s TTS variants — saves ~50 % of the download.
 
-**Packaging approach (pending architecture decision in M1_PLAN.md):**
+**Packaging approach — Option A locked (2026-05-19).**
 
-The asset-host pipeline supports three options for shipping this. Architecture decision (Option A / B / C) is pending; once picked, this section gets a "Decided" line.
+We ship a single `kokoro-82m-en.tar.gz` mirrored to our v1 GitHub release. App unpacks into `Application Support/SousChef/voice-assets/v1/kokoro-82m-en/` on first launch. Atomic versioned install + SHA-256 integrity check (D2) flow exactly like every other asset.
 
-- **Option A — Tarball.** Use `huggingface-cli download FluidInference/kokoro-82m-coreml --include="kokoro_21_15s_v2.mlmodelc/*" --include="G2P*.mlmodelc/*" --include="*.json"` to grab the English subset; `tar -czf staging/v1/kokoro-82m-en.tar.gz <files>`. Ship the single tarball; app unpacks into `Application Support/SousChef/voice-assets/v1/kokoro-82m-en/`.
-- **Option B — `ModelRegistry.baseURL` override.** Don't mirror anything; FluidAudio default-fetches from Hugging Face on first launch. We expose a setting later that points at our mirror as a safety net if HuggingFace goes down or rate-limits.
-- **Option C — Skip from v1.** Defer Kokoro mirroring until a later milestone; M1 ships only Hey Chef (+ conditional Whisper) in our v1 release; FluidAudio fetches Kokoro from HuggingFace.
+**Why A** over the alternatives that were on the table:
+
+- **vs. Option B (`ModelRegistry.baseURL` override + HF-direct):** keeps a single fetch path (`asset-manifest.json` → our release URL → install). No conditional code for "fallback to HF if our mirror is empty". HF rate-limits and outages are operationally invisible to users.
+- **vs. Option C (defer):** M1 needs working TTS on first launch; deferring leaves a dependency for FluidAudio to dial HF directly at runtime, which we'd then need to remove later anyway.
+
+**Build recipe** — automated in `scripts/build-kokoro-tarball.sh`:
+
+```bash
+scripts/build-kokoro-tarball.sh v1
+# Resolves the HF commit SHA (or KOKORO_REVISION env override),
+# huggingface-cli downloads the English subset into
+# staging/v1/kokoro-82m-en/, records the commit at
+# staging/v1/kokoro-82m-en.commit.txt, then tars to
+# staging/v1/kokoro-82m-en.tar.gz.
+```
+
+`scripts/mirror.sh` recognises the `local:scripts/build-kokoro-tarball.sh` `upstream_url` sentinel in `manifests/v1.json` and tells the operator to run the build script if the tarball is missing — it never tries to `curl` a multi-file HF repo as if it were one file.
+
+After the tarball lands in `staging/v1/`, the normal `hash.sh → publish.sh → app-manifest.sh` flow applies with no Kokoro-specific branches.
 
 ## Voice selection
 
@@ -43,7 +59,7 @@ No mirroring change needed for voice selection — every Kokoro voice is in the 
 
 | Date | Source | SHA-256 | Notes |
 |---|---|---|---|
-| TBD | `huggingface.co/FluidInference/kokoro-82m-coreml` snapshot @ TBD-commit-sha | (`scripts/hash.sh v1`) | Initial M1 mirror. Record the HF commit SHA at download time so future refreshes start from the same point. |
+| TBD | `huggingface.co/FluidInference/kokoro-82m-coreml` @ commit recorded in `staging/v1/kokoro-82m-en.commit.txt` | (`scripts/hash.sh v1`) | Initial M1 mirror, Option A tarball. Built by `scripts/build-kokoro-tarball.sh v1`. The .commit.txt sidecar pins the source revision so future refreshes (v2+) start from a known point. |
 
 ## License
 
