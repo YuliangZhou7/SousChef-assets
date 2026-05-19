@@ -1,26 +1,29 @@
 {
   "version": "v1",
-  "description": "First M1 voice-asset release. Includes wake-word + Kokoro TTS unconditionally; Whisper-large-v3-turbo conditionally based on the M1 STT spike outcome (Q3).",
+  "scope": "developer-local dogfooding (M1)",
+  "description": "First M1 voice-asset definition. Scope is dev/dogfooding only — see hey-chef-wakeword.publish_eligible=false. The first public-release-eligible build is v2, after the custom-trained Hey Chef classifier replaces the openwakeword.com community model.",
   "assets": [
     {
       "id": "hey-chef-wakeword",
       "filename": "hey-chef.onnx",
-      "upstream_url": "TBD — fill in the direct .onnx download URL from openwakeword.com/library after you confirm which Hey Chef variant to ship",
+      "upstream_url": "openwakeword.com/library community section — manual download; specific URL not recorded at download time",
       "sha256": "TBD — populated by scripts/hash.sh after mirroring",
       "size_bytes": 0,
       "required_if": "always",
       "unpacked_path": "hey-chef.onnx",
-      "notes": "If openwakeword.com publishes only .tflite, convert once via `python -m tf2onnx.convert --tflite hey-chef.tflite --output hey-chef.onnx --opset 18` and mirror the .onnx. Document the conversion in upstream/hey-chef.md."
+      "publish_eligible": false,
+      "notes": "DEV/DOGFOOD ONLY. Per openwakeword.com/terms (reviewed 2026-05-19) the community models cannot be redistributed in a public release. This entry stays in staging/v1/ for the developer's local builds only; scripts/publish.sh skips assets with publish_eligible=false. Custom-trained replacement lands in v2 before TestFlight."
     },
     {
-      "id": "kokoro-82m",
-      "filename": "kokoro-82m.mlmodelc.zip",
-      "upstream_url": "TBD — FluidAudio's CoreML release URL (e.g. https://github.com/FluidInference/FluidAudio/releases/download/v<x>/kokoro-82m.mlmodelc.zip)",
+      "id": "kokoro-82m-en",
+      "filename": "kokoro-82m-en.tar.gz",
+      "upstream_url": "https://huggingface.co/FluidInference/kokoro-82m-coreml (English subset; see upstream/kokoro.md for the file list)",
       "sha256": "TBD",
       "size_bytes": 0,
       "required_if": "always",
-      "unpacked_path": "kokoro-82m.mlmodelc",
-      "notes": "Ship the directory zipped; the app unzips into Application Support/SousChef/voice-assets/v1/."
+      "unpacked_path": "kokoro-82m-en/",
+      "publish_eligible": true,
+      "notes": "Pending architecture decision in M1_PLAN.md (Option A tarball / B HF-direct via FluidAudio's ModelRegistry.baseURL override / C skip from v1). Option A's filename + format shown here as the default; revise once decided."
     },
     {
       "id": "whisper-large-v3-turbo",
@@ -30,6 +33,7 @@
       "size_bytes": 0,
       "required_if": "stt_engine == 'whisper'",
       "unpacked_path": "whisper-large-v3-turbo.mlmodelc",
+      "publish_eligible": true,
       "notes": "Conditional asset. Only mirrored + uploaded if the M1 STT spike (Q3 in M1_PLAN.md) picks WhisperKit. If iOS 26 SpeechAnalyzer wins, omit from the release entirely."
     }
   ],
@@ -37,6 +41,7 @@
     "version": "v1",
     "stt_engine": "TBD — set after the M1 STT spike concludes (Q3)",
     "base_url": "https://github.com/YuliangZhou7/SousChef-assets/releases/download/v1",
-    "assets_field_to_be_populated_by": "scripts/app-manifest.sh"
+    "assets_field_to_be_populated_by": "scripts/app-manifest.sh",
+    "publish_eligibility_filter": "scripts/publish.sh and scripts/app-manifest.sh both filter out assets where publish_eligible=false"
   }
 }

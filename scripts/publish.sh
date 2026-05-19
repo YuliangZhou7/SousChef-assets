@@ -35,7 +35,10 @@ if ! gh release view "$VERSION" --repo "$REPO" >/dev/null 2>&1; then
     --notes "Auto-published by scripts/publish.sh. Asset attribution: ATTRIBUTION.md."
 fi
 
-# List filenames the manifest expects to ship.
+# List filenames the manifest expects to ship. Filters out:
+# - assets whose sha256 is still TBD (not yet mirrored + hashed)
+# - assets explicitly marked publish_eligible=false (e.g. v1's Hey Chef
+#   community model, which is dev/dogfood only per its license terms)
 filenames="$(
   /usr/bin/python3 -c '
 import json, sys
@@ -43,6 +46,9 @@ with open(sys.argv[1]) as f:
     data = json.load(f)
 for asset in data["assets"]:
     if asset.get("sha256", "").startswith("TBD"):
+        continue
+    if asset.get("publish_eligible", True) is False:
+        print(f"  skipping {asset[\"id\"]}: publish_eligible=false", file=sys.stderr)
         continue
     print(asset["filename"])
 ' "$MANIFEST"

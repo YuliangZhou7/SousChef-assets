@@ -41,6 +41,13 @@ for asset in data["assets"]:
         # Still TBD; skip from the shipped manifest. The app won't
         # request this asset until it's ready.
         continue
+    if asset.get("publish_eligible", True) is False:
+        # Dev/dogfood-only assets (e.g. the v1 community Hey Chef
+        # classifier) live in the developer's local staging only.
+        # The in-app manifest must NOT reference them — fresh installs
+        # would otherwise try to fetch from a release URL that
+        # doesn't exist.
+        continue
     out["assets"].append({
         "id": asset["id"],
         "filename": asset["filename"],

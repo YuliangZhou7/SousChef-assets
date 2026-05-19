@@ -100,6 +100,18 @@ Whisper-large-v3-turbo is in the v1 manifest with `"required_if": "stt_engine ==
 
 `scripts/mirror.sh` skips `"TBD"` entries silently. `scripts/app-manifest.sh` skips assets with `"TBD"` sha256 from the emitted in-app manifest, so the app never tries to download a Whisper asset that wasn't published.
 
+## Publish-eligibility (license-restricted assets)
+
+Each asset in a manifest carries a `publish_eligible` boolean (defaults to `true` if omitted). When `false`:
+
+- `scripts/publish.sh` skips the asset — it's not uploaded to the GitHub release.
+- `scripts/app-manifest.sh` drops the asset from the in-app manifest — fresh installs don't try to fetch from a non-existent release URL.
+- The file still lives in local `staging/<version>/` so the developer can build the app against it for dogfooding.
+
+**v1 example:** the openwakeword.com community "Hey Chef" model is `publish_eligible: false` because per the site's terms (reviewed 2026-05-19) community models can't be redistributed in a public release. The developer's local M1 build uses the community model from `staging/v1/hey-chef.onnx` directly (bundled into the dev build, not fetched at runtime). The first **public** release (v2) ships a custom-trained Hey Chef classifier with `publish_eligible: true`.
+
+This is the safety rail: a license-restricted asset can never accidentally leak into a public release just because someone forgot to comment it out.
+
 ## What doesn't go through this flow
 
 - Recording corpora (wake-word, command, Q&A, MOS) — those live in the app repo at `Packages/*/Tests/Fixtures/`, tracked with Git LFS (per M1_PLAN.md Q12).

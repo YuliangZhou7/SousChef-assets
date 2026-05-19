@@ -4,14 +4,22 @@ Per-asset upstream sources + licenses. Update every time an asset is
 refreshed or added. See `upstream/<asset>.md` for the deep-dive per
 asset.
 
-## v1 (current)
+## v1 (current — dev/dogfood scope only)
+
+**Note:** v1 is the developer-local M1 dogfooding release. The Hey Chef classifier in v1 is the openwakeword.com community model, which per the site's terms cannot be redistributed in a public app release. The first publicly-shippable release will be **v2**, after the custom-trained Hey Chef classifier lands (see `upstream/hey-chef.md` "Pre-TestFlight retraining").
+
+| Asset | Upstream | License | Public-release-eligible? | Notes |
+|---|---|---|---|---|
+| `hey-chef.onnx` | openwakeword.com/library community section | community submission — restricted per openwakeword.com/terms (reviewed 2026-05-19) | **No.** Dev/dogfood only. | Local-only; not uploaded to a public GitHub release. Must be replaced by a custom-trained classifier before any TestFlight build. |
+| `kokoro-82m-en.tar.gz` *(filename pending packaging decision)* | `huggingface.co/FluidInference/kokoro-82m-coreml` — English subset | Apache 2.0 (Kokoro upstream) + Apache 2.0 (FluidInference CoreML packaging) | **Yes.** | Pending architecture decision (Option A tarball vs. B HF-direct vs. C defer); see `upstream/kokoro.md`. |
+| `whisper-large-v3-turbo.mlmodelc.zip` | [argmaxinc/whisperkit-coreml](https://huggingface.co/argmaxinc/whisperkit-coreml) | MIT (WhisperKit) + MIT (Whisper-large-v3-turbo upstream) | **Yes**, if shipped. | **Conditional asset** — included only if the M1 STT spike (M1_PLAN.md Q3) picks WhisperKit over iOS 26 `SpeechAnalyzer`. |
+| `speaker-verifier-placeholder.bin` | n/a — M1 stub | n/a | n/a | Placeholder; not shipped. Real FluidAudio speaker embedding lands in a post-M1 personalization milestone. |
+
+## v2 (planned — first public-release-eligible build)
 
 | Asset | Upstream | License | Notes |
 |---|---|---|---|
-| `hey-chef.onnx` | [openwakeword.com/library](https://openwakeword.com/library) — "Hey Chef" community model | Apache 2.0 (openWakeWord convention; verify per model page) | Compatible with the `livekit-wakeword` Swift runtime (livekit-wakeword inherits openWakeWord's mel + Google speech embedding pipeline). If only `.tflite` is published, convert via `tf2onnx`. |
-| `kokoro-82m.mlmodelc.zip` | [FluidInference/FluidAudio](https://github.com/FluidInference/FluidAudio) Kokoro-82M CoreML release | Apache 2.0 (FluidAudio) + Apache 2.0 (Kokoro upstream) | Bundled as a zipped CoreML asset; the app unzips into `Application Support/SousChef/voice-assets/v1/`. |
-| `whisper-large-v3-turbo.mlmodelc.zip` | [argmaxinc/whisperkit-coreml](https://huggingface.co/argmaxinc/whisperkit-coreml) | MIT (WhisperKit) + MIT (Whisper-large-v3-turbo upstream) | **Conditional asset** — included only if the M1 STT spike (M1_PLAN.md Q3) picks WhisperKit over iOS 26 `SpeechAnalyzer`. |
-| `speaker-verifier-placeholder.bin` | n/a — M1 stub | n/a | Placeholder; not shipped. Real FluidAudio speaker embedding lands in a post-M1 personalization milestone. |
+| `hey-chef.onnx` | Custom-trained by us via livekit-wakeword pipeline on hand-collected positives + LiveKit/openWakeWord public negatives | Owned by us (training data terms permit; document at training time) | Replaces the v1 community classifier. Required before TestFlight. See `upstream/hey-chef.md` "Pre-TestFlight retraining". |
 
 ## License compliance reminders
 
